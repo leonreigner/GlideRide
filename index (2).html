@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Glide-Ride</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ivory:#FAF8F3;
+  --cream:#F2EDE3;
+  --gold:#C9A96E;
+  --gold-dark:#A07C45;
+  --silk:#E8DFD0;
+  --ink:#1A1714;
+  --ink-soft:#3D3730;
+  --muted:#8A7F74;
+  --accent:#D4A853;
+  --white:#FFFFFF;
+  --success:#4A7C59;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--ivory);color:var(--ink);font-family:'DM Sans',sans-serif;line-height:1.6;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,248,243,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--silk);padding:0 2rem}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;letter-spacing:-0.02em;color:var(--ink)}
+.logo span{color:var(--gold)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{font-size:0.875rem;color:var(--ink-soft);text-decoration:none;letter-spacing:0.04em;text-transform:uppercase;font-weight:500}
+.nav-cta{background:var(--ink);color:var(--white);border:none;padding:0.6rem 1.4rem;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:500;cursor:pointer;letter-spacing:0.04em;text-transform:uppercase}
+/* CART BUTTON */
+.cart-btn{position:relative;background:transparent;border:1.5px solid var(--silk);color:var(--ink);padding:0.5rem 1.1rem;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:0.5rem;transition:all 0.2s}
+.cart-btn:hover{border-color:var(--ink)}
+.cart-badge{background:var(--ink);color:var(--white);border-radius:50%;font-size:0.65rem;font-weight:700;width:18px;height:18px;display:none;align-items:center;justify-content:center;position:absolute;top:-6px;right:-6px}
+.cart-badge.has-items{display:flex}
+/* CART SIDEBAR */
+.cart-overlay{position:fixed;inset:0;background:rgba(26,23,20,0.35);z-index:500;opacity:0;pointer-events:none;transition:opacity 0.3s}
+.cart-overlay.open{opacity:1;pointer-events:all}
+.cart-sidebar{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100vw;background:var(--ivory);z-index:501;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;border-left:1px solid var(--silk)}
+.cart-sidebar.open{transform:translateX(0)}
+.cart-header{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid var(--silk);display:flex;align-items:center;justify-content:space-between}
+.cart-header h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--ink)}
+.cart-close{background:none;border:1px solid var(--silk);border-radius:2px;width:36px;height:36px;cursor:pointer;font-size:1.1rem;color:var(--ink-soft);display:flex;align-items:center;justify-content:center}
+.cart-body{flex:1;overflow-y:auto;padding:1.5rem}
+.cart-empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.cart-empty-icon{font-size:3rem;opacity:0.25;display:block;margin-bottom:1rem}
+.cart-empty p{font-size:0.9rem;line-height:1.6}
+.cart-item{display:flex;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--silk);align-items:flex-start}
+.cart-item-thumb{width:60px;height:60px;background:var(--cream);border-radius:4px;border:1px solid var(--silk);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.cart-item-thumb img{width:100%;height:100%;object-fit:cover}
+.cart-item-info{flex:1}
+.cart-item-name{font-size:0.9rem;font-weight:500;color:var(--ink);margin-bottom:0.2rem}
+.cart-item-meta{font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem}
+.cart-item-row{display:flex;align-items:center;justify-content:space-between}
+.cart-item-price{font-size:0.9rem;font-weight:600;color:var(--ink)}
+.cart-item-remove{background:none;border:none;font-size:0.75rem;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.cart-footer{padding:1.25rem 1.5rem;border-top:1px solid var(--silk)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.cart-total-label{font-size:0.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
+.cart-total-price{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--ink)}
+.cart-checkout-btn{width:100%;background:var(--ink);color:var(--white);border:none;padding:1rem;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;cursor:pointer;letter-spacing:0.04em;text-transform:uppercase;transition:background 0.2s}
+.cart-checkout-btn:hover{background:var(--ink-soft)}
+
+/* HERO */
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:80px 2rem 0;max-width:1200px;margin:0 auto;gap:4rem}
+.hero-badge{display:inline-block;background:var(--cream);border:1px solid var(--silk);padding:0.35rem 0.9rem;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:1.5rem;border-radius:2px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,5vw,4rem);line-height:1.1;color:var(--ink);margin-bottom:1rem}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{font-size:1.1rem;color:var(--ink-soft);margin-bottom:2rem;max-width:420px;line-height:1.7;font-weight:300}
+.hero-actions{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.btn-primary{background:var(--ink);color:var(--white);border:none;padding:1rem 2.5rem;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;border-radius:2px;letter-spacing:0.02em;transition:background 0.2s}
+.btn-primary:hover{background:var(--ink-soft)}
+.btn-secondary{background:transparent;color:var(--ink);border:1.5px solid var(--ink);padding:1rem 2rem;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;border-radius:2px;transition:all 0.2s}
+.btn-secondary:hover{background:var(--ink);color:var(--white)}
+.hero-price{font-size:0.9rem;color:var(--muted);margin-top:0.8rem}
+.hero-price strong{color:var(--ink);font-size:1.3rem;font-weight:600}
+
+.hero-visual{position:relative}
+.hero-img-box{border-radius:8px;aspect-ratio:9/11;overflow:hidden;position:relative;background:var(--cream);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;border:1px solid var(--silk)}
+.hero-img-box img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-img-placeholder{text-align:center;padding:2rem}
+.hero-img-placeholder .img-icon{font-size:4rem;margin-bottom:1rem;opacity:0.3}
+.hero-img-placeholder p{font-size:0.85rem;color:var(--muted);line-height:1.5}
+.hero-img-placeholder label{display:inline-block;margin-top:1rem;background:var(--ink);color:var(--white);padding:0.5rem 1.2rem;border-radius:2px;font-size:0.8rem;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase}
+.hero-img-placeholder input[type=file]{display:none}
+
+/* TRUST BAR */
+.trust-bar{background:var(--ink);color:var(--white);padding:1rem 2rem;overflow:hidden}
+.trust-scroll{display:flex;gap:4rem;animation:scroll-x 20s linear infinite;white-space:nowrap}
+.trust-item{display:flex;align-items:center;gap:0.6rem;font-size:0.8rem;letter-spacing:0.06em;text-transform:uppercase;opacity:0.85}
+.trust-dot{width:6px;height:6px;background:var(--gold);border-radius:50%;flex-shrink:0}
+@keyframes scroll-x{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* PROBLEM SECTION */
+.problem{max-width:1200px;margin:0 auto;padding:5rem 2rem}
+.section-label{font-size:0.75rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+.section-label::before{content:'';display:block;width:2rem;height:1px;background:var(--gold)}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);color:var(--ink);margin-bottom:1rem}
+.comparison-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:2rem;align-items:stretch;margin-top:3rem}
+.compare-card{background:var(--white);border:1px solid var(--silk);border-radius:6px;padding:2rem;position:relative}
+.compare-card.bad{border-color:#E8D0D0;background:#FDFAFA}
+.compare-card.good{border-color:#C5D8CC;background:#F7FBF8}
+.compare-badge{position:absolute;top:-0.7rem;left:50%;transform:translateX(-50%);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.8rem;border-radius:2px;font-weight:600;white-space:nowrap}
+.bad .compare-badge{background:#F5E0E0;color:#8B3A3A}
+.good .compare-badge{background:#C9E0CF;color:#2D6B40}
+.compare-icon{font-size:2.5rem;margin-bottom:1rem;display:block}
+.compare-title{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--ink);margin-bottom:0.5rem}
+.compare-points{list-style:none;font-size:0.9rem;color:var(--ink-soft)}
+.compare-points li{padding:0.35rem 0;display:flex;align-items:flex-start;gap:0.5rem}
+.compare-points li::before{flex-shrink:0;margin-top:0.2rem}
+.bad .compare-points li::before{content:'✕';color:#C05050;font-size:0.8rem}
+.good .compare-points li::before{content:'✓';color:var(--success);font-size:0.8rem;font-weight:700}
+.vs-divider{display:flex;align-items:center;justify-content:center}
+.vs-circle{width:48px;height:48px;background:var(--cream);border:1.5px solid var(--silk);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:var(--muted);letter-spacing:0.05em}
+
+/* PRODUCT SECTION */
+.product-section{background:var(--cream);padding:5rem 2rem}
+.product-inner{max-width:1200px;margin:0 auto}
+
+/* MODEL TABS */
+.model-tabs{display:flex;gap:0;margin-bottom:3rem;border:1.5px solid var(--silk);border-radius:4px;overflow:hidden;background:var(--white)}
+.model-tab{flex:1;padding:1rem 1.5rem;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;cursor:pointer;color:var(--muted);transition:all 0.2s;text-align:center;border-right:1px solid var(--silk)}
+.model-tab:last-child{border-right:none}
+.model-tab.active{background:var(--ink);color:var(--white)}
+.model-tab .tab-name{display:block;font-size:0.95rem;font-weight:600;margin-bottom:0.15rem;color:inherit}
+.model-tab .tab-sub{display:block;font-size:0.72rem;letter-spacing:0.06em;text-transform:uppercase;opacity:0.7}
+
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+
+/* Product image upload */
+.product-display{background:var(--white);border-radius:8px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;border:2px dashed var(--silk);cursor:pointer;transition:border-color 0.2s}
+.product-display:hover{border-color:var(--gold)}
+.product-display img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.product-tag{position:absolute;top:1rem;left:1rem;background:var(--ink);color:var(--white);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.7rem;border-radius:2px;z-index:2}
+.upload-hint{text-align:center;padding:1.5rem;z-index:1}
+.upload-hint .upload-icon{font-size:3rem;opacity:0.2;display:block;margin-bottom:0.75rem}
+.upload-hint p{font-size:0.8rem;color:var(--muted);line-height:1.5}
+.upload-hint span{display:inline-block;margin-top:0.5rem;font-size:0.75rem;color:var(--gold-dark);font-weight:500}
+.product-display input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:3}
+
+.product-details h2{font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--ink);margin-bottom:0.25rem}
+.model-subtitle{font-size:0.9rem;color:var(--muted);margin-bottom:1.5rem;letter-spacing:0.04em}
+.product-rating{display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem}
+.stars-gold{color:var(--gold);font-size:1rem}
+.rating-count{font-size:0.85rem;color:var(--muted)}
+.feature-list{list-style:none;margin-bottom:2rem}
+.feature-list li{display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;font-size:0.95rem;color:var(--ink-soft);border-bottom:1px solid var(--silk)}
+.feature-list li:last-child{border:none}
+.feat-icon{width:28px;height:28px;background:var(--cream);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0}
+
+/* SIZE GUIDE */
+.size-guide{background:var(--white);border:1px solid var(--silk);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem}
+.size-guide h4{font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:1rem}
+.size-tabs{display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.size-tab{padding:0.4rem 1rem;border:1.5px solid var(--silk);border-radius:2px;font-size:0.85rem;cursor:pointer;transition:all 0.15s;background:var(--white);color:var(--ink-soft);font-family:'DM Sans',sans-serif}
+.size-tab.active{border-color:var(--ink);background:var(--ink);color:var(--white)}
+.size-info{font-size:0.8rem;color:var(--muted);display:flex;align-items:center;gap:0.5rem}
+
+/* BUNDLE */
+.bundle-box{background:var(--ink);color:var(--white);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+.bundle-box::before{content:'SAVE 15%';position:absolute;top:1rem;right:1rem;background:var(--gold);color:var(--ink);font-size:0.7rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.6rem;border-radius:2px}
+.bundle-box h4{font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:0.4rem}
+.bundle-box p{font-size:0.9rem;color:rgba(255,255,255,0.85)}
+.bundle-toggle{display:flex;gap:0.75rem;margin-top:1rem}
+.bundle-btn{flex:1;padding:0.6rem;border-radius:2px;font-size:0.82rem;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;font-weight:500}
+.bundle-btn.outline{background:transparent;border:1.5px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.7)}
+.bundle-btn.filled{background:var(--gold);border:none;color:var(--ink)}
+
+/* STICKY ADD TO CART */
+.sticky-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--white);border-top:1px solid var(--silk);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;transform:translateY(100%);transition:transform 0.3s;box-shadow:0 -4px 24px rgba(26,23,20,0.08)}
+.sticky-bar.visible{transform:translateY(0)}
+.sticky-product{display:flex;align-items:center;gap:0.75rem}
+.sticky-emoji{font-size:1.5rem}
+.sticky-name{font-size:0.9rem;font-weight:500;color:var(--ink)}
+.sticky-price{font-size:0.8rem;color:var(--muted)}
+.sticky-actions{display:flex;gap:0.75rem;align-items:center}
+.sticky-qty{display:flex;align-items:center;border:1.5px solid var(--silk);border-radius:2px;overflow:hidden}
+.qty-btn{width:36px;height:36px;background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink);font-family:'DM Sans',sans-serif}
+.qty-display{padding:0 0.5rem;font-size:0.9rem;font-weight:500;color:var(--ink)}
+.sticky-add{background:var(--ink);color:var(--white);border:none;padding:0.7rem 1.8rem;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;cursor:pointer;transition:background 0.2s}
+.sticky-add:hover{background:var(--gold-dark)}
+
+/* TRUST SECTION */
+.trust-section{background:var(--cream);padding:4rem 2rem}
+.trust-inner{max-width:1200px;margin:0 auto}
+.trust-badges{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:2.5rem}
+.trust-badge-card{background:var(--white);border:1px solid var(--silk);border-radius:6px;padding:1.5rem;text-align:center}
+.trust-badge-icon{font-size:2rem;margin-bottom:0.75rem;display:block}
+.trust-badge-title{font-size:0.85rem;font-weight:600;color:var(--ink);margin-bottom:0.25rem;letter-spacing:0.03em}
+.trust-badge-desc{font-size:0.78rem;color:var(--muted);line-height:1.5}
+
+/* PAYMENT */
+.payment-section{max-width:1200px;margin:0 auto;padding:3rem 2rem}
+.payment-inner{text-align:center}
+.payment-icons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem}
+.pay-icon{background:var(--white);border:1px solid var(--silk);border-radius:4px;padding:0.5rem 1.2rem;font-size:0.8rem;font-weight:600;color:var(--ink-soft);letter-spacing:0.03em}
+
+/* FOOTER */
+footer{background:var(--ink);color:rgba(255,255,255,0.6);text-align:center;padding:2rem;font-size:0.8rem;letter-spacing:0.04em}
+footer strong{color:var(--gold);font-family:'Playfair Display',serif}
+/* LEGAL / CONTACT PAGES */
+.page-overlay{position:fixed;inset:0;background:var(--ivory);z-index:600;overflow-y:auto;transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1)}
+.page-overlay.open{transform:translateY(0)}
+.page-topbar{position:sticky;top:0;background:rgba(250,248,243,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--silk);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;z-index:10}
+.page-topbar span{font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.page-back{background:none;border:1px solid var(--silk);border-radius:2px;padding:0.4rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer;color:var(--ink-soft);display:flex;align-items:center;gap:0.4rem}
+.page-content{max-width:720px;margin:0 auto;padding:3rem 2rem 5rem}
+.page-content h1{font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--ink);margin-bottom:0.5rem}
+.page-content .page-date{font-size:0.8rem;color:var(--muted);margin-bottom:2.5rem;letter-spacing:0.04em}
+.page-content h2{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--ink);margin:2rem 0 0.6rem}
+.page-content p{font-size:0.95rem;color:var(--ink-soft);line-height:1.8;margin-bottom:1rem}
+.page-content ul{padding-left:1.4rem;margin-bottom:1rem}
+.page-content ul li{font-size:0.95rem;color:var(--ink-soft);line-height:1.8;margin-bottom:0.3rem}
+.page-divider{border:none;border-top:1px solid var(--silk);margin:2.5rem 0}
+/* Contact form */
+.contact-form{margin-top:1.5rem}
+.form-group{margin-bottom:1.25rem}
+.form-group label{display:block;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:0.4rem}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:0.75rem 1rem;border:1.5px solid var(--silk);border-radius:2px;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--ink);background:var(--white);outline:none;transition:border-color 0.2s}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--gold)}
+.form-group textarea{resize:vertical;min-height:120px}
+.form-submit{background:var(--ink);color:var(--white);border:none;padding:0.9rem 2rem;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;cursor:pointer;letter-spacing:0.04em;text-transform:uppercase;transition:background 0.2s;margin-top:0.5rem}
+.form-submit:hover{background:var(--ink-soft)}
+.contact-info{background:var(--cream);border:1px solid var(--silk);border-radius:6px;padding:1.5rem;margin-top:2rem;font-size:0.9rem;color:var(--ink-soft);line-height:1.8}
+.contact-info strong{color:var(--ink);display:block;margin-bottom:0.5rem;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.hero-badge,.hero h1,.hero-sub,.hero-actions,.hero-price{animation:fadeUp 0.7s both}
+.hero h1{animation-delay:0.1s}
+.hero-sub{animation-delay:0.2s}
+.hero-actions{animation-delay:0.3s}
+.hero-price{animation-delay:0.4s}
+.hero-visual{animation:fadeUp 0.7s 0.2s both}
+
+/* MOBILE */
+@media(max-width:768px){
+  .hero{grid-template-columns:1fr;padding-top:80px;gap:2rem}
+  .hero-visual{order:-1}
+  .comparison-grid{grid-template-columns:1fr;gap:1rem}
+  .vs-divider{display:none}
+  .product-grid{grid-template-columns:1fr;gap:2rem}
+  .trust-badges{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+  .model-tabs{flex-direction:column}
+  .model-tab{border-right:none;border-bottom:1px solid var(--silk)}
+  .model-tab:last-child{border-bottom:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="logo">Glide<span>·</span>Ride</div>
+    <ul class="nav-links">
+      <li><a href="#problem">Why Glide-Ride</a></li>
+      <li><a href="#product">Shop</a></li>
+    </ul>
+    <button class="cart-btn" onclick="openCart()" id="cartBtn">
+      🛒 Cart
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Satin Liner Collection — 3 Models</div>
+    <h1>Arrive with <em>perfect</em> hair. Every ride.</h1>
+    <p class="hero-sub">The only helmet liner designed for your hair, not just your head. Silk-satin technology that eliminates helmet hair, static, and breakage. Available for jet, full-face, and modular helmets.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('product').scrollIntoView({behavior:'smooth'})">Shop the Liner</button>
+      <button class="btn-secondary" onclick="document.getElementById('problem').scrollIntoView({behavior:'smooth'})">See the Difference</button>
+    </div>
+    <div class="hero-price"><strong>From €35</strong> &nbsp;·&nbsp; Free shipping over €50 &nbsp;·&nbsp; 30-day returns</div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-img-box" id="heroImgBox">
+      <img id="heroImg" src="images/model-wearing.png" alt="Glide-Ride Satin Liner" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-scroll">
+    <div class="trust-item"><div class="trust-dot"></div>Machine Washable</div>
+    <div class="trust-item"><div class="trust-dot"></div>Universal Fit</div>
+    <div class="trust-item"><div class="trust-dot"></div>Free Shipping over €50</div>
+    <div class="trust-item"><div class="trust-dot"></div>30-Day Returns</div>
+    <div class="trust-item"><div class="trust-dot"></div>Jet · Full Face · Modular</div>
+    <div class="trust-item"><div class="trust-dot"></div>Reduces Breakage</div>
+    <div class="trust-item"><div class="trust-dot"></div>Machine Washable</div>
+    <div class="trust-item"><div class="trust-dot"></div>Universal Fit</div>
+    <div class="trust-item"><div class="trust-dot"></div>Free Shipping over €50</div>
+    <div class="trust-item"><div class="trust-dot"></div>30-Day Returns</div>
+    <div class="trust-item"><div class="trust-dot"></div>Jet · Full Face · Modular</div>
+    <div class="trust-item"><div class="trust-dot"></div>Reduces Breakage</div>
+  </div>
+</div>
+
+<!-- PROBLEM SECTION -->
+<section class="problem" id="problem">
+  <div class="section-label">The Problem</div>
+  <h2 class="section-title">Standard foam is damaging your hair</h2>
+  <p style="color:var(--muted);max-width:500px;font-size:1rem;font-weight:300">Every ride, rough foam creates friction, static, and moisture loss. We engineered the solution.</p>
+  <div class="comparison-grid">
+    <div class="compare-card bad">
+      <span class="compare-badge">Standard Foam Liner</span>
+      <span class="compare-icon" style="margin-top:1.5rem">🪨</span>
+      <div class="compare-title">Rough & Damaging</div>
+      <ul class="compare-points">
+        <li>Causes frizz and static on every ride</li>
+        <li>Absorbs moisture, drying out your hair</li>
+        <li>Friction breaks fragile strands</li>
+        <li>Traps heat and sweat against the scalp</li>
+        <li>Not washable — bacteria builds up</li>
+      </ul>
+    </div>
+    <div class="vs-divider"><div class="vs-circle">VS</div></div>
+    <div class="compare-card good">
+      <span class="compare-badge">Glide-Ride Satin</span>
+      <span class="compare-icon" style="margin-top:1.5rem">🌸</span>
+      <div class="compare-title">Smooth & Protective</div>
+      <ul class="compare-points">
+        <li>Zero-friction satin surface for perfect hair</li>
+        <li>Moisture-retaining weave keeps hair hydrated</li>
+        <li>Gentle on every hair type and texture</li>
+        <li>Breathable ventilation channels for comfort</li>
+        <li>Machine washable — stays fresh</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT SECTION -->
+<section class="product-section" id="product">
+  <div class="product-inner">
+    <div class="section-label">The Liner</div>
+    <h2 class="section-title" style="margin-bottom:2rem">Choose your model</h2>
+
+    <!-- MODEL TABS -->
+    <div class="model-tabs">
+      <button class="model-tab active" onclick="selectModel('jet',this)">
+        <span class="tab-name">Jet</span>
+        <span class="tab-sub">Open-face helmets · €35</span>
+      </button>
+      <button class="model-tab" onclick="selectModel('fullface',this)">
+        <span class="tab-name">Full Face</span>
+        <span class="tab-sub">Full-coverage helmets · €35</span>
+      </button>
+      <button class="model-tab" onclick="selectModel('modular',this)">
+        <span class="tab-name">Modular</span>
+        <span class="tab-sub">Flip-up helmets · €35</span>
+      </button>
+    </div>
+
+    <div class="product-grid">
+      <!-- Product image with upload -->
+      <div>
+        <div class="product-display" id="productDisplay" style="cursor:default;border-style:solid">
+          <div class="product-tag" id="productTag">Jet · Open Face</div>
+          <img id="productImg" src="images/jet-liner.jpg" alt="Glide-Ride Jet Liner" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:block">
+        </div>
+      </div>
+      
+      <div class="product-details">
+        <h2 id="modelName">Glide-Ride Jet Liner</h2>
+        <p class="model-subtitle" id="modelSubtitle">For open-face & jet helmets</p>
+
+        <ul class="feature-list" id="featureList">
+          <!-- filled by JS -->
+        </ul>
+
+        <!-- SIZE GUIDE -->
+        <div class="size-guide">
+          <h4>📐 Size Guide — Measure Your Helmet</h4>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem">Measure the inner circumference of your helmet, then select your size.</p>
+          <div class="size-tabs" id="sizeTabs">
+            <button class="size-tab" onclick="selectSize(this,'Under 54cm')">XS · under 54cm</button>
+            <button class="size-tab active" onclick="selectSize(this,'54–57cm')">S/M · 54–57cm</button>
+            <button class="size-tab" onclick="selectSize(this,'57–60cm')">L/XL · 57–60cm</button>
+            <button class="size-tab" onclick="selectSize(this,'Over 60cm')">XXL · over 60cm</button>
+          </div>
+          <div class="size-info"><span></span><span id="sizeInfo">Most popular size · Fits 54–57cm inner circumference · Stretch panel adjusts ±2cm</span></div>
+        </div>
+
+        <!-- BUNDLE -->
+        <div class="bundle-box">
+          <h4>Buy 2, Save 15%</h4>
+          <p>"One to wash, one to wear" — always fresh, always smooth.</p>
+          <div class="bundle-toggle">
+            <button class="bundle-btn filled" onclick="selectBundle(1,this)" id="b1">1 Liner — <span class="b1price">€35</span> ✓</button>
+            <button class="bundle-btn outline" onclick="selectBundle(2,this)" id="b2">2 Liners — <span class="b2price">€60</span></button>
+          </div>
+        </div>
+
+        <button class="btn-primary" style="width:100%;padding:1.1rem;font-size:1rem;margin-bottom:0.75rem" onclick="addToCart()">Add to Cart — <span id="cartPrice">€35</span></button>
+        <div style="display:flex;gap:1.5rem;justify-content:center;font-size:0.78rem;color:var(--muted)">
+          <span>Secure checkout</span>
+          <span>Ships in 24h</span>
+          <span>↩ Free returns</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST SECTION -->
+<div class="trust-section">
+  <div class="trust-inner">
+    <div class="section-label">Why riders choose us</div>
+    <div class="trust-badges">
+      <div class="trust-badge-card">
+        <span class="trust-badge-icon">🧺</span>
+        <div class="trust-badge-title">Machine Washable</div>
+        <div class="trust-badge-desc">Clean at 40°C — no shrinkage, maintains shape wash after wash</div>
+      </div>
+      <div class="trust-badge-card">
+        <span class="trust-badge-icon">🪖</span>
+        <div class="trust-badge-title">Made for Every Helmet</div>
+        <div class="trust-badge-desc">Dedicated cuts for jet, full-face, and modular helmets</div>
+      </div>
+      <div class="trust-badge-card">
+        <span class="trust-badge-icon">🚀</span>
+        <div class="trust-badge-title">Free Shipping</div>
+        <div class="trust-badge-desc">Free on all orders over €50. Express 24h dispatch</div>
+      </div>
+      <div class="trust-badge-card">
+        <span class="trust-badge-icon">↩</span>
+        <div class="trust-badge-title">30-Day Returns</div>
+        <div class="trust-badge-desc">Not happy? Return it. No questions, no hassle</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT -->
+<div class="payment-section">
+  <div class="payment-inner">
+    <p style="font-size:0.8rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem">Secure Payment Methods</p>
+    <div class="payment-icons">
+      <div class="pay-icon">VISA</div>
+      <div class="pay-icon">Mastercard</div>
+      <div class="pay-icon">ApplePay</div>
+      <div class="pay-icon">PayPal</div>
+      <div class="pay-icon">Stripe</div>
+      <div class="pay-icon">Klarna</div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem">🔒 256-bit SSL encryption · PCI DSS compliant</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Glide·Ride</strong> &nbsp;·&nbsp; The Satin Liner Company &nbsp;·&nbsp;
+  <a href="#" onclick="openPage('terms');return false" style="color:var(--gold);text-decoration:none">Terms & Privacy</a> ·
+  <a href="#" onclick="openPage('contact');return false" style="color:var(--gold);text-decoration:none">Contact</a>
+  <br><br>© 2025 Glide-Ride. All rights reserved.
+</footer>
+
+<!-- STICKY BAR -->
+<div class="sticky-bar" id="stickyBar">
+  <div class="sticky-product">
+    <div class="sticky-emoji">🪖</div>
+    <div>
+      <div class="sticky-name" id="stickyName">Glide-Ride Jet Liner</div>
+      <div class="sticky-price" id="stickyLabel">Open Face · S/M</div>
+    </div>
+  </div>
+  <div class="sticky-actions">
+    <div class="sticky-qty">
+      <button class="qty-btn" onclick="changeQty(-1)">−</button>
+      <span class="qty-display" id="qtyDisplay">1</span>
+      <button class="qty-btn" onclick="changeQty(1)">+</button>
+    </div>
+    <button class="sticky-add" onclick="addToCart()">Add to Cart · <span id="stickyPrice">€29</span></button>
+  </div>
+</div>
+
+<!-- CART OVERLAY -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3>Your Cart</h3>
+    <button class="cart-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-body" id="cartBody">
+    <div class="cart-empty" id="cartEmpty">
+      <span class="cart-empty-icon">🛒</span>
+      <p>Nothing here yet.<br>Add a liner to get started.</p>
+    </div>
+    <div id="cartItems"></div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-price" id="cartTotal">€0</span>
+    </div>
+    <button class="cart-checkout-btn">Checkout</button>
+  </div>
+</div>
+
+<!-- TERMS & PRIVACY PAGE -->
+<div class="page-overlay" id="termsPage">
+  <div class="page-topbar">
+    <span>Glide·Ride</span>
+    <button class="page-back" onclick="closePage('terms')">← Back to shop</button>
+  </div>
+  <div class="page-content">
+    <h1>Terms & Privacy</h1>
+    <p class="page-date">Last updated: January 2025</p>
+
+    <h2>Terms of Service</h2>
+    <p>By accessing and placing an order with Glide-Ride, you confirm that you are in agreement with and bound by the following terms and conditions.</p>
+
+    <h2>Products & Orders</h2>
+    <p>All orders are subject to product availability. We reserve the right to refuse or cancel any order at our sole discretion. Prices are listed in EUR and are subject to change without notice. We strive to display product colours and images as accurately as possible, however we cannot guarantee perfect accuracy due to monitor differences.</p>
+
+    <h2>Shipping & Returns</h2>
+    <p>We offer free shipping on all orders over €50. Orders are dispatched within 24 hours of purchase (business days). We offer a full 30-day return policy — if you are not satisfied with your purchase for any reason, you may return it in its original condition for a full refund.</p>
+
+    <h2>Intellectual Property</h2>
+    <p>All content on this website — including text, images, logos, and product designs — is the property of Glide-Ride and may not be reproduced without express written permission.</p>
+
+    <hr class="page-divider">
+
+    <h2>Privacy Policy</h2>
+    <p>Your privacy is important to us. This policy explains how we collect, use, and protect your personal information when you visit our website or place an order.</p>
+
+    <h2>Information We Collect</h2>
+    <ul>
+      <li>Name, email address, and shipping address when you place an order</li>
+      <li>Payment information (processed securely via Stripe — we never store card details)</li>
+      <li>Browsing behaviour via anonymised analytics (no personal identifiers)</li>
+    </ul>
+
+    <h2>How We Use Your Data</h2>
+    <ul>
+      <li>To process and fulfil your orders</li>
+      <li>To send order confirmation and shipping updates</li>
+      <li>To improve our products and website experience</li>
+      <li>To contact you about your order if needed</li>
+    </ul>
+
+    <h2>Data Security</h2>
+    <p>We use 256-bit SSL encryption and are PCI DSS compliant. We never sell or share your personal data with third parties for marketing purposes.</p>
+
+    <h2>Cookies</h2>
+    <p>We use essential cookies to keep your cart and session active, and anonymised analytics cookies to understand how visitors use our site. You may disable cookies in your browser settings, though this may affect site functionality.</p>
+
+    <h2>Your Rights</h2>
+    <p>You have the right to access, correct, or delete your personal data at any time. To exercise these rights, contact us at <strong>privacy@glide-ride.com</strong>.</p>
+  </div>
+</div>
+
+<!-- CONTACT PAGE -->
+<div class="page-overlay" id="contactPage">
+  <div class="page-topbar">
+    <span>Glide·Ride</span>
+    <button class="page-back" onclick="closePage('contact')">← Back to shop</button>
+  </div>
+  <div class="page-content">
+    <h1>Contact Us</h1>
+    <p class="page-date">We usually reply within 24 hours</p>
+
+    <p>Have a question about sizing, your order, or our liners? We'd love to hear from you. Fill in the form below and our team will get back to you as soon as possible.</p>
+
+    <div class="contact-form">
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" placeholder="Jane Rider">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" placeholder="jane@example.com">
+      </div>
+      <div class="form-group">
+        <label>Subject</label>
+        <select>
+          <option>Order question</option>
+          <option>Sizing help</option>
+          <option>Returns & refunds</option>
+          <option>Wholesale enquiry</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea placeholder="Tell us how we can help…"></textarea>
+      </div>
+      <button class="form-submit" onclick="this.textContent='Sent ✓';this.style.background='var(--success)'">Send Message</button>
+    </div>
+
+    <div class="contact-info">
+      <strong>Direct Contact</strong>
+      📧 hello@glide-ride.com<br>
+      📦 Returns &amp; orders: orders@glide-ride.com<br>
+      ⏱ Response time: within 24 hours (Mon–Fri)
+    </div>
+  </div>
+</div>
+
+<script>
+const models = {
+  jet: {
+    name: 'Glide-Ride Jet Liner',
+    subtitle: 'For open-face & jet helmets',
+    tag: 'Jet · Open Face',
+    price1: 35, price2: 60,
+    img: 'images/jet-liner.jpg',
+    features: [
+      ['🧵','22-momme pure satin weave'],
+      ['🔄','Machine washable, 40°C'],
+      ['🪖','Tailored cut for open-face & jet helmets'],
+      ['🌬️','Full-scalp ventilation channels'],
+      ['🌍','Certified sustainable production'],
+    ]
+  },
+  fullface: {
+    name: 'Glide-Ride Full Face Liner',
+    subtitle: 'For full-face & track helmets',
+    tag: 'Full Face',
+    price1: 35, price2: 60,
+    img: 'images/fullface-liner.jpg',
+    features: [
+      ['🧵','22-momme pure satin weave'],
+      ['🔄','Machine washable, 40°C'],
+      ['🪖','Extended cut wraps full-face interior'],
+      ['🌬️','Side & crown ventilation channels'],
+      ['🛡️','Chin-bar compatible design'],
+    ]
+  },
+  modular: {
+    name: 'Glide-Ride Modular Liner',
+    subtitle: 'For flip-up & modular helmets',
+    tag: 'Modular',
+    price1: 35, price2: 60,
+    img: 'images/modular-liner.jpg',
+    features: [
+      ['🧵','22-momme pure satin weave'],
+      ['🔄','Machine washable, 40°C'],
+      ['🪖','Articulated cut for flip-up mechanism'],
+      ['🌬️','Dual-zone ventilation channels'],
+      ['🔗','Compatible with all major modular systems'],
+    ]
+  }
+};
+
+let currentModel = 'jet';
+let bundleQty = 1;
+let qty = 1;
+let selectedSize = 'S/M · 54–57cm';
+// cart state
+let cart = [];
+
+function calcPrice(q) {
+  if (q === 1) return 35;
+  if (q === 2) return 60;
+  return 60 + (q - 2) * 25;
+}
+
+function selectModel(key, btn) {
+  currentModel = key;
+  document.querySelectorAll('.model-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const m = models[key];
+  document.getElementById('modelName').textContent = m.name;
+  document.getElementById('modelSubtitle').textContent = m.subtitle;
+  document.getElementById('productTag').textContent = m.tag;
+  document.getElementById('stickyName').textContent = m.name;
+
+  // features
+  const fl = document.getElementById('featureList');
+  fl.innerHTML = m.features.map(f=>`<li><div class="feat-icon">${f[0]}</div>${f[1]}</li>`).join('');
+
+  // prices
+  bundleQty = 1;
+  document.querySelectorAll('.bundle-btn').forEach(b=>{b.classList.remove('filled');b.classList.add('outline')});
+  document.getElementById('b1').classList.add('filled');document.getElementById('b1').classList.remove('outline');
+  document.querySelector('.b1price').textContent = '€35';
+  document.querySelector('.b2price').textContent = '€60';
+  document.getElementById('cartPrice').textContent = '€35';
+  document.getElementById('stickyPrice').textContent = '€35';
+  updateStickyLabel();
+
+  // update product image
+  const img = document.getElementById('productImg');
+  img.src = m.img;
+}
+
+function selectSize(btn, range) {
+  document.querySelectorAll('.size-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  selectedSize = btn.textContent.split(' ')[0];
+  const info = {
+    'Under 54cm':'For smaller helmets · inner circumference under 54cm',
+    '54–57cm':'Most popular size · Fits 54–57cm inner circumference · Stretch panel adjusts ±2cm',
+    '57–60cm':'Standard adult size · inner circumference 57–60cm',
+    'Over 60cm':'Large fit · inner circumference over 60cm · contact us if unsure'
+  };
+  document.getElementById('sizeInfo').textContent = info[range]||'';
+  updateStickyLabel();
+}
+
+function updateStickyLabel() {
+  document.getElementById('stickyLabel').textContent = models[currentModel].tag + ' · ' + selectedSize;
+}
+
+function selectBundle(n, btn) {
+  bundleQty = n;
+  document.querySelectorAll('.bundle-btn').forEach(b=>{b.classList.remove('filled');b.classList.add('outline')});
+  btn.classList.add('filled');btn.classList.remove('outline');
+  const price = calcPrice(n);
+  document.getElementById('cartPrice').textContent = '€'+price;
+  document.getElementById('stickyPrice').textContent = '€'+price;
+}
+
+function changeQty(d) {
+  qty = Math.max(1, qty+d);
+  document.getElementById('qtyDisplay').textContent = qty;
+  // update sticky price based on qty
+  const price = calcPrice(qty);
+  document.getElementById('stickyPrice').textContent = '€'+price;
+}
+
+// CART
+function openCart() {
+  document.getElementById('cartSidebar').classList.add('open');
+  document.getElementById('cartOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeCart() {
+  document.getElementById('cartSidebar').classList.remove('open');
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function renderCart() {
+  const empty = document.getElementById('cartEmpty');
+  const items = document.getElementById('cartItems');
+  const footer = document.getElementById('cartFooter');
+  const badge = document.getElementById('cartBadge');
+  if (cart.length === 0) {
+    empty.style.display = 'block';
+    items.innerHTML = '';
+    footer.style.display = 'none';
+    badge.classList.remove('has-items');
+  } else {
+    empty.style.display = 'none';
+    const total = cart.reduce((s,i)=>s+i.price,0);
+    items.innerHTML = cart.map((item,idx)=>`
+      <div class="cart-item">
+        <div class="cart-item-thumb">
+          <img src="${item.img}" onerror="this.style.display='none';this.parentNode.textContent='🪖'" alt="">
+        </div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-meta">${item.meta}</div>
+          <div class="cart-item-row">
+            <span class="cart-item-price">€${item.price}</span>
+            <button class="cart-item-remove" onclick="removeFromCart(${idx})">Remove</button>
+          </div>
+        </div>
+      </div>`).join('');
+    document.getElementById('cartTotal').textContent = '€'+total;
+    footer.style.display = 'block';
+    badge.textContent = cart.length;
+    badge.classList.add('has-items');
+  }
+}
+function removeFromCart(idx) {
+  cart.splice(idx, 1);
+  renderCart();
+}
+function addToCart() {
+  const m = models[currentModel];
+  const price = calcPrice(bundleQty);
+  const qtyLabel = bundleQty > 1 ? `x${bundleQty}` : '';
+  cart.push({
+    name: m.name,
+    meta: `${selectedSize} ${qtyLabel ? '· ' + qtyLabel + ' liners' : ''}`,
+    price: price,
+    img: m.img
+  });
+  renderCart();
+  const btn = document.querySelector('.sticky-add');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '✓ Added!';
+  btn.style.background = 'var(--success)';
+  setTimeout(()=>{btn.innerHTML=orig;btn.style.background=''},2000);
+  openCart();
+}
+
+// PAGES
+function openPage(page) {
+  const id = page === 'terms' ? 'termsPage' : 'contactPage';
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePage(page) {
+  const id = page === 'terms' ? 'termsPage' : 'contactPage';
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// init features for jet
+selectModel('jet', document.querySelector('.model-tab'));
+renderCart();
+
+// sticky
+window.addEventListener('scroll',()=>{
+  const rect = document.getElementById('product').getBoundingClientRect();
+  document.getElementById('stickyBar').classList.toggle('visible', rect.top < -200);
+});
+</script>
+</body>
+</html>
