@@ -204,7 +204,7 @@ footer strong{color:var(--gold);font-family:'Playfair Display',serif}
       <li><a href="#problem">Why Glide-Ride</a></li>
       <li><a href="#product">Shop</a></li>
     </ul>
-    <button class="nav-cta" onclick="document.getElementById('product').scrollIntoView({behavior:'smooth'})">Shop Now</button>
+    <button class="nav-cta" onclick="document.getElementById('product').scrollIntoView({behavior:'smooth'})">Cart</button>
   </div>
 </nav>
 
@@ -344,15 +344,15 @@ footer strong{color:var(--gold);font-family:'Playfair Display',serif}
           <h4>Buy 2, Save 15%</h4>
           <p>"One to wash, one to wear" — always fresh, always smooth.</p>
           <div class="bundle-toggle">
-            <button class="bundle-btn outline" onclick="selectBundle(1,this)" id="b1">1 Liner — <span class="b1price">€29</span></button>
-            <button class="bundle-btn filled" onclick="selectBundle(2,this)" id="b2">2 Liners — <span class="b2price">€49</span> ✓</button>
+            <button class="bundle-btn outline" onclick="selectBundle(1,this)" id="b1">1 Liner — <span class="b1price">€35</span></button>
+            <button class="bundle-btn filled" onclick="selectBundle(2,this)" id="b2">2 Liners — <span class="b2price">€60</span> ✓</button>
           </div>
         </div>
 
-        <button class="btn-primary" style="width:100%;padding:1.1rem;font-size:1rem;margin-bottom:0.75rem" onclick="addToCart()">Add to Cart — <span id="cartPrice">€49</span></button>
+        <button class="btn-primary" style="width:100%;padding:1.1rem;font-size:1rem;margin-bottom:0.75rem" onclick="addToCart()">Add to Cart — <span id="cartPrice">€35</span></button>
         <div style="display:flex;gap:1.5rem;justify-content:center;font-size:0.78rem;color:var(--muted)">
-          <span>🔒 Secure checkout</span>
-          <span>🚀 Ships in 24h</span>
+          <span>Secure checkout</span>
+          <span>Ships in 24h</span>
           <span>↩ Free returns</span>
         </div>
       </div>
@@ -396,7 +396,7 @@ footer strong{color:var(--gold);font-family:'Playfair Display',serif}
     <div class="payment-icons">
       <div class="pay-icon">VISA</div>
       <div class="pay-icon">Mastercard</div>
-      <div class="pay-icon">🍎 Pay</div>
+      <div class="pay-icon">ApplePay</div>
       <div class="pay-icon">PayPal</div>
       <div class="pay-icon">Stripe</div>
       <div class="pay-icon">Klarna</div>
@@ -429,7 +429,7 @@ footer strong{color:var(--gold);font-family:'Playfair Display',serif}
       <span class="qty-display" id="qtyDisplay">1</span>
       <button class="qty-btn" onclick="changeQty(1)">+</button>
     </div>
-    <button class="sticky-add" onclick="addToCart()">Add to Cart · <span id="stickyPrice">€49</span></button>
+    <button class="sticky-add" onclick="addToCart()">Add to Cart · <span id="stickyPrice">€29</span></button>
   </div>
 </div>
 
