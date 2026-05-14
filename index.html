@@ -972,6 +972,60 @@ function closePage(page) {
   document.body.style.overflow = '';
 }
 
+// CHECKOUT
+function openCheckout() {
+  closeCart();
+  renderCheckoutSummary();
+  document.getElementById('checkoutPage').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function renderCheckoutSummary() {
+  const lines = document.getElementById('checkoutOrderLines');
+  const subtotalEl = document.getElementById('checkoutSubtotal');
+  const totalEl = document.getElementById('checkoutTotal');
+  const shippingEl = document.getElementById('checkoutShipping');
+  if (cart.length === 0) {
+    lines.innerHTML = '<div class="order-empty-note">Your cart is empty.</div>';
+    subtotalEl.textContent = '€0'; totalEl.textContent = '€0';
+    shippingEl.textContent = '—';
+    return;
+  }
+  const subtotal = cart.reduce((s,i)=>s+i.price,0);
+  const shipping = subtotal >= 50 ? 0 : 4.95;
+  const total = subtotal + shipping;
+  lines.innerHTML = cart.map(item=>`
+    <div class="order-line">
+      <div><div class="order-line-name">${item.name}</div><div class="order-line-meta">${item.meta}</div></div>
+      <div class="order-line-price">€${item.price}</div>
+    </div>`).join('');
+  subtotalEl.textContent = '€'+subtotal.toFixed(2).replace('.00','');
+  shippingEl.textContent = shipping === 0 ? 'Free 🎉' : '€'+shipping.toFixed(2);
+  totalEl.textContent = '€'+total.toFixed(2).replace('.00','');
+}
+function selectPayMethod(el, type) {
+  document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+  ['cardFields','klarnaInfo','redirectInfo'].forEach(id => document.getElementById(id).classList.remove('active'));
+  if (type === 'card' || type === 'mc') {
+    document.getElementById('cardFields').classList.add('active');
+  } else if (type === 'klarna') {
+    document.getElementById('klarnaInfo').classList.add('active');
+  } else {
+    document.getElementById('redirectInfo').classList.add('active');
+  }
+}
+function applyPromo(btn) {
+  btn.textContent = '✓ Applied'; btn.style.background = 'var(--success)';
+}
+function handlePay(btn) {
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Processing…'; btn.disabled = true;
+  setTimeout(()=>{
+    btn.textContent = '✓ Order Placed!'; btn.style.background = 'var(--success)';
+    cart = []; renderCart(); renderCheckoutSummary();
+  }, 1800);
+}
+
 // init features for jet
 selectModel('jet', document.querySelector('.model-tab'));
 renderCart();
