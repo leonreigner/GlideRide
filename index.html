@@ -551,9 +551,124 @@ footer strong{color:var(--gold);font-family:'Playfair Display',serif}
       <span class="cart-total-label">Total</span>
       <span class="cart-total-price" id="cartTotal">€0</span>
     </div>
-    <button class="cart-checkout-btn">Checkout</button>
+    <button class="cart-checkout-btn" onclick="openCheckout()">Checkout</button>
   </div>
 </div>
+
+<!-- CHECKOUT PAGE -->
+<div class="page-overlay" id="checkoutPage">
+  <div class="page-topbar">
+    <span>Glide·Ride — Secure Checkout</span>
+    <button class="page-back" onclick="closePage('checkout')">← Back to cart</button>
+  </div>
+  <div class="checkout-layout">
+
+    <!-- LEFT: FORM -->
+    <div>
+      <!-- Contact -->
+      <div class="checkout-block">
+        <div class="checkout-section-title">Contact</div>
+        <div class="form-group"><label>Email</label><input type="email" placeholder="you@example.com"></div>
+      </div>
+
+      <!-- Shipping -->
+      <div class="checkout-block">
+        <div class="checkout-section-title">Shipping Address</div>
+        <div class="card-row" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.25rem">
+          <div class="form-group" style="margin:0"><label>First Name</label><input type="text" placeholder="Jane"></div>
+          <div class="form-group" style="margin:0"><label>Last Name</label><input type="text" placeholder="Rider"></div>
+        </div>
+        <div class="form-group"><label>Address</label><input type="text" placeholder="12 Rue des Selles"></div>
+        <div class="card-row" style="display:grid;grid-template-columns:2fr 1fr;gap:0.75rem">
+          <div class="form-group" style="margin:0"><label>City</label><input type="text" placeholder="Paris"></div>
+          <div class="form-group" style="margin:0"><label>Postcode</label><input type="text" placeholder="75001"></div>
+        </div>
+        <div class="form-group" style="margin-top:0.75rem"><label>Country</label>
+          <select>
+            <option>France</option><option>Germany</option><option>Spain</option><option>Italy</option>
+            <option>Netherlands</option><option>Belgium</option><option>United Kingdom</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="checkout-block">
+        <div class="checkout-section-title">Payment Method</div>
+        <div class="payment-methods">
+          <div class="pay-method selected" onclick="selectPayMethod(this,'card')">
+            <div class="pay-method-icon visa">VISA</div>
+            <div><div class="pay-method-label">Visa / Mastercard</div><div class="pay-method-sub">Credit or debit card</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'apple')">
+            <div class="pay-method-icon apple">&#xF8FF;</div>
+            <div><div class="pay-method-label">Apple Pay</div><div class="pay-method-sub">Touch or Face ID</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'paypal')">
+            <div class="pay-method-icon paypal">PP</div>
+            <div><div class="pay-method-label">PayPal</div><div class="pay-method-sub">Pay with your balance</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'stripe')">
+            <div class="pay-method-icon stripe">S</div>
+            <div><div class="pay-method-label">Stripe Link</div><div class="pay-method-sub">One-click checkout</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'klarna')">
+            <div class="pay-method-icon klarna">K</div>
+            <div><div class="pay-method-label">Klarna</div><div class="pay-method-sub">Pay in 3 · interest-free</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'mc')">
+            <div class="pay-method-icon mc">MC</div>
+            <div><div class="pay-method-label">Mastercard</div><div class="pay-method-sub">Credit or debit card</div></div>
+          </div>
+        </div>
+
+        <!-- Card fields (shown for card/mc) -->
+        <div class="card-fields active" id="cardFields">
+          <div class="form-group"><label>Card Number</label><input type="text" placeholder="1234 5678 9012 3456" maxlength="19"></div>
+          <div class="card-row">
+            <div class="form-group" style="margin:0"><label>Expiry</label><input type="text" placeholder="MM / YY" maxlength="7"></div>
+            <div class="form-group" style="margin:0"><label>CVC</label><input type="text" placeholder="123" maxlength="4"></div>
+          </div>
+          <div class="form-group" style="margin-top:0.75rem;margin-bottom:0"><label>Name on Card</label><input type="text" placeholder="Jane Rider"></div>
+        </div>
+
+        <!-- Klarna info (shown for klarna) -->
+        <div class="card-fields" id="klarnaInfo">
+          <p style="font-size:0.88rem;color:var(--ink-soft);margin:0">You'll be redirected to Klarna to complete your purchase. Split your order into <strong>3 interest-free payments</strong>. No fees, no surprises.</p>
+        </div>
+
+        <!-- PayPal / Apple / Stripe info -->
+        <div class="card-fields" id="redirectInfo">
+          <p style="font-size:0.88rem;color:var(--ink-soft);margin:0">You'll be securely redirected to complete your payment after reviewing your order.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: ORDER SUMMARY -->
+    <div>
+      <div class="order-panel">
+        <div class="order-panel-title">Order Summary</div>
+        <div id="checkoutOrderLines">
+          <div class="order-empty-note">Your cart is empty.</div>
+        </div>
+        <hr class="order-divider">
+        <div class="promo-row">
+          <input class="promo-input" type="text" placeholder="Promo code">
+          <button class="promo-btn" onclick="applyPromo(this)">Apply</button>
+        </div>
+        <div class="order-subtotal-row"><span>Subtotal</span><span id="checkoutSubtotal">€0</span></div>
+        <div class="order-subtotal-row"><span>Shipping</span><span id="checkoutShipping">Calculated at next step</span></div>
+        <div class="order-total-row">
+          <span class="order-total-label">Total</span>
+          <span class="order-total-price" id="checkoutTotal">€0</span>
+        </div>
+        <button class="checkout-pay-btn" onclick="handlePay(this)">Pay Now</button>
+        <div class="checkout-secure">🔒 256-bit SSL &nbsp;·&nbsp; PCI DSS Compliant</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 
 <!-- TERMS & PRIVACY PAGE -->
 <div class="page-overlay" id="termsPage">
